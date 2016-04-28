@@ -10,7 +10,7 @@ output:
 
 ```{r setup, echo=FALSE}
 knitr::opts_chunk$set(tidy=TRUE, highlight=TRUE, dev="png",
-               cache=FALSE, highlight=TRUE, autodep=TRUE, warning=FALSE, error=FALSE,
+               cache=TRUE, highlight=TRUE, autodep=TRUE, warning=FALSE, error=FALSE,
                message=FALSE, prompt=TRUE, comment='', fig.cap='')
 ```
 
@@ -99,22 +99,9 @@ metadata = summarydata[, !colnames(summarydata) %in% known_columns, drop=FALSE]
 metadata = metadata[, colSums(is.na(metadata)) < nrow(metadata)]
 ```
 
-```{r sanitize-datatable}
-sanitize_datatable = function(df, ...) {
- # remove dashes which cause wrapping
- DT::datatable(df, ..., rownames=gsub("-", "_", rownames(df)),
-                   colnames=gsub("-", "_", colnames(df)))
-}
-```
-
 ```{r set-random-seed}
 # set seed for reproducibility
 set.seed(1454944673)
-```
-
-## Sample metadata
-```{r summary-table, echo=FALSE, cache=FALSE}
-sanitize_datatable(summarydata, style='bootstrap')
 ```
 
 ```{r heatmap-function}
@@ -141,6 +128,9 @@ do_quality = "Mapped.reads" %in% colnames(summarydata)
 ```
 
 ## Mapped reads
+We have a good amount of mapped reads per sample and it is fairly
+consistent between the samples.
+
 ```{r mapped-plot, eval=qualimap_run}
 ggplot(summarydata, aes(x=Name, y=Mapped)) +
     theme_bw(base_size=10) +
@@ -160,6 +150,9 @@ ggplot(summarydata, aes(x=Name, y=Mapped.reads)) +
 ```
 
 ## Genomic mapping rate
+The genomic mapping rate is great, and mostly consistent across the
+samples, another good indication of quality libraries.
+
 ```{r mapping-rate-plot, eval=qualimap_run}
 ggplot(summarydata, aes(x=Name, y=Mapping.Rate)) +
     geom_bar(stat="identity") +
@@ -179,6 +172,8 @@ ggplot(summarydata, aes(x=Name, y=Mapped.reads.pct)) +
 ```
 
 ## Number of genes detected
+We see a large number of genes detected in these samples, a good indication
+of quality.
 ```{r genes-detected-plot}
 dd = data.frame(Name=colnames(counts), Genes.Detected = colSums(counts > 0))
 ggplot(dd, aes(x=Name, y=Genes.Detected)) +
@@ -190,6 +185,8 @@ ggplot(dd, aes(x=Name, y=Genes.Detected)) +
 ```
 
 ## Gene detection saturation
+We can see that as we sequence deeper, we can detect more genes.
+
 ```{r saturation-plot, eval=do_quality}
 dd = data.frame(Mapped=summarydata$Mapped, Genes.Detected = colSums(counts > 0))
 ggplot(dd, aes(x=Mapped, y=Genes.Detected)) +
@@ -201,6 +198,9 @@ ggplot(dd, aes(x=Mapped, y=Genes.Detected)) +
 ```
 
 ## Exonic mapping rate
+The exonic mapping rate looks great, indicating we actually sequenced
+RNA and not genomic DNA.
+
 ```{r exonic-mapping-plot, eval="Exonic.Rate" %in% colnames(summarydata)}
 ggplot(summarydata, aes(x=Name, y=Exonic.Rate)) +
     geom_bar(stat="identity") +
@@ -211,9 +211,11 @@ ggplot(summarydata, aes(x=Name, y=Exonic.Rate)) +
 ```
 
 ## rRNA mapping rate
+The rRNA mapping rate has some variability, but is low like we expect.
 ```{r check-rRNA-eval}
 eval_rRNA = "rRNA_rate" %in% colnames(summarydata) & !sum(is.na(summarydata$rRNA_rate)) == nrow(summarydata)
 ```
+
 ```{r rRNA-rate-plot, eval=eval_rRNA & do_quality}
 ggplot(summarydata, aes(x=Name, y=rRNA_rate)) +
     geom_bar(stat="identity") +
@@ -224,6 +226,10 @@ ggplot(summarydata, aes(x=Name, y=rRNA_rate)) +
 ```
 
 ## Estimated fragment length of paired-end reads
+Some libraries have shorter fragment lengths than the other libraries.
+The overall fragment length is low, for looking at splicing grabbing
+lengths closer to 300 might have been better.
+
 ```{r fragment-length-plot, eval="Fragment.Length.Mean" %in% colnames(summarydata) & do_quality}
 ggplot(summarydata, aes(x=Name, y=Fragment.Length.Mean)) +
     geom_bar(stat="identity") +
@@ -234,6 +240,8 @@ ggplot(summarydata, aes(x=Name, y=Fragment.Length.Mean)) +
 ```
 
 ## Boxplot of log10 counts per gene
+Highly consistent. This looks awesome.
+
 ```{r boxplot-raw}
 melted = melt(counts)
 colnames(melted) = c("sample", "count")
@@ -252,6 +260,7 @@ Trimmed mean of M-values (TMM) normalization is described
 
 Robinson, M. D., & Oshlack, A. (2010). A scaling normalization method for differential expression analysis of RNA-seq data. Genome Biology, 11(3). doi:10.1186/gb-2010-11-3-r25
 
+Looks great.
 ```{r boxplot-normalized}
 y = DGEList(counts=counts)
 y = calcNormFactors(y)
@@ -268,6 +277,7 @@ ggplot(melted, aes(x=sample, y=count)) + geom_boxplot() +
 ```
 
 ## Density of log10 TMM-normalized counts
+Beautifully consistent.
 ```{r density-normalized}
 ggplot(melted, aes(x=count, group=sample)) +
     geom_density() +
@@ -277,20 +287,27 @@ ggplot(melted, aes(x=count, group=sample)) +
 ```
 
 ## Correlation (Pearson) heatmap of TMM-normalized counts
+You can see Pearson doesn't really cluster the samples well.
 ```{r pearson-heatmap-normalized, eval=ncol(counts) > 1}
 heatmap_fn(cor(normalized_counts, method="pearson"))
 ```
 
 ## Correlation (Spearman) heatmap of TMM-normalized counts
+Spearman gets it though.
 ```{r spearman-heatmap-normalized, eval=ncol(counts) > 1}
 heatmap_fn(cor(normalized_counts, method="spearman"))
 ```
 
 ## PCA plot
+Doing PCA on the 500 most variable genes does a great job clustering the
+samples by genotype. We should expect to see a lot of differences between
+these samples, which is kind of bad if we want to look at splicing. It will
+make picking the splicing events out more difficult.
+
 ```{r pca, eval=ncol(counts) > 1}
 dds = DESeqDataSetFromMatrix(countData=counts, colData=summarydata, design=~Name)
 vst = varianceStabilizingTransformation(dds)
-plotPCA(vst, intgroup=c("Name"))
+plotPCA(vst, intgroup=c("genotype"))
 ```
 ```{r deseq2-tximport-helper-functions}
 # snagged from development version of DESeq
@@ -384,71 +401,60 @@ handle_deseq2 = function(dds, summarydata, column) {
 }
 ```
 
-## MA-plots
-
-```{r DESeq-output, results='asis'}
-all_results = handle_deseq2(dds, summarydata, condition)
-len = length(all_results)
-nr = ceiling( len / 3 )
-nc = ceiling( len / nr )
-par(mfrow=c(nr,nc))
-for(i in seq(length(all_results))) {
-  plotMA(all_results[[i]])
-  title(paste("MA plot for contrast", names(all_results)[i]))
+```{r biomart-lookup}
+library(biomaRt)
+library(dplyr)
+human = useMart(biomart = "ENSEMBL_MART_ENSEMBL",
+                dataset="hsapiens_gene_ensembl",
+                host = "jul2015.archive.ensembl.org")
+symbols = getBM(attributes=c("ensembl_gene_id", "hgnc_symbol"), mart=human)
+join_biomart = function(res, symbols) {
+  res = data.frame(res)
+  res$id = rownames(res)
+  res = res %>% left_join(symbols, by=c("id"="ensembl_gene_id"))
+  res = res[order(res$padj),]
+  return(res)
 }
 ```
 
-## Volcano-plots
+## Differential expression {.tabset}
+For these comparisons, positive log2 fold changes are higher in `PRPF8` and
+`PRPF38` knockouts than the `control` samples. There are a lot of genes
+different for both samples, which means it might be tough to pick out
+splicing differences.
 
-```{r DESeq-volcano}
-for(i in seq(length(all_results))) {
-  stats = as.data.frame(all_results[[i]][,c(2,6)])
-  p = volcano_density_plot(stats, title=names(all_results)[i], lfc.cutoff=1.5)
-  print(p)
-}
+## PRP8 vs control
+```{r prpf8-vs-control}
+prpf8 = results(dds, contrast=c("genotype", "prpf8", "control"))
+plotMA(prpf8)
+prpf8 = as.data.frame(prpf8)
+volcano_density_plot(prpf8[, c(2,6)], title="PRPF8 vs control", lfc.cutoff=2)
+prpf8 = join_biomart(prpf8, symbols)
+write.table(prpf8, file="prpf8-vs-control.csv", col.names=TRUE, row.names=FALSE,
+            quote=FALSE, sep=",")
+```
+ihere are `r nrow(subset(prpf8, padj < 0.05))` genes differentially expressed
+between the `PRPF8` and the `control` samples.
+
+## PRPF38 vs control
+```{r prpf38-vs-control}
+prpf38 = results(dds, contrast=c("genotype", "prpf38", "control"))
+plotMA(prpf38)
+prpf38 = as.data.frame(prpf38)
+volcano_density_plot(prpf38[, c(2,6)], title="PRPF38 vs control", lfc.cutoff=2)
+prpf38 = join_biomart(prpf38, symbols)
+write.table(prpf38, file="prpf38-vs-control.csv", col.names=TRUE, row.names=FALSE,
+            quote=FALSE, sep=",")
 ```
 
-## DEGreport
-
-```{r get-groups}
-get_groups <- function(d, comp, condition)
-{
-  g <- unlist(strsplit(comp," "))
-  g1 <- d$Name[d[, (names(d)==condition)]==g[1]]
-  g2 <- d$Name[d[, (names(d)==condition)]==g[3]]
-  list(g1,g2)
-}
-```
-
-### Pvalues-vs-Mean
-
-Here we plot some information about how the p-values are correlated with the
-mean or the standard deviation.
-
-```{r DEGreport-M}
-plots = list()
-scale_factor = round(1/nr * 14)
-for(i in seq(length(all_results))) {
-  plots[[i]] = degMean(all_results[[i]]$pvalue, rlogMat) +
-  theme_bw(base_size = scale_factor) +
-  ggtitle(paste0("Pvalues-vs-Mean for ", names(all_results)[i]))
-}
-do.call(grid.arrange,plots)
-```
-
-### Pvalues-vs-Variation
-
-```{r DEGreport-V}
-plots = list()
-for(i in seq(length(all_results))) {
-  plots[[i]] = degVar(all_results[[i]]$pvalue, rlogMat) +
-  theme_bw(base_size = scale_factor) +
-  ggtitle(paste0("Pvalues-vs-Variation for ", names(all_results)[i]))
-}
-do.call(grid.arrange,plots)
-```
+ihere are `r nrow(subset(prpf38, padj < 0.05))` genes differentially expressed
+between the `PRPF38` and the `control` samples.
 
 ### Mean-vs-Variation
+This is a diagnostic plot to make sure we aren't calling genes differentially
+expressed just because we didn't model the mean-variance relationship very well.
+These look good, most of our calls are within what we'd expect.
+
 ```{r DEGreport-MV}
 plots = list()
 for(i in seq(length(all_results))) {
@@ -465,18 +471,18 @@ if(length(plots) > 0) {
 }
 ```
 
-## Differentially expressed genes
+# Summary
+These libraries look awesome, some of the best RNA-seq libraries I have seen in
+a long time. We find a huge amount of differential expression at the gene level
+between these samples, which might make it hard to look at splicing differences.
+We could also be falsely calling gene level differential expression if there is
+a large amount of splicing differences between the samples. The next step
+is to look at splicing differences between the samples, we'll do that first
+at the transcript level, since that will have the most easily interpretable
+results. After that we will look at sub-exon level with DEXSeq and then
+move on to event level descriptions which will require more work.
 
-```{r DESeq-tables, results='asis'}
-for(i in seq(length(all_results))) {
-  cat(paste("Lowest adjusted p-value hits for", names(all_results)[i]))
-  out_df = as.data.frame(all_results[[i]])
-  out_df$id = rownames(out_df)
-  out_df = out_df[, c("id", colnames(out_df)[colnames(out_df) != "id"])]
-  write.table(out_df, file=paste(names(all_results)[i], ".tsv", sep=""),
-                         quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
-  sig_genes = subset(out_df, padj < 0.05)
-  DT::datatable(sig_genes)
-  cat("\n")
-}
-```
+# Links
+[PRPF8 vs control results](prpf8-vs-control.csv)
+
+[PRPF38 vs control results](prpf38-vs-control.csv)
