@@ -1,0 +1,97 @@
+---
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    highlight: zenburn
+    theme: flatly
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(tidy=TRUE, highlight=TRUE, dev="png",
+                      cache=TRUE, cache.lazy=FALSE, highlight=TRUE, autodep=TRUE,
+                      warning=FALSE, error=FALSE,
+                      message=FALSE, prompt=TRUE, comment='', fig.cap='')
+```
+
+# Transcript level differential expression with Sleuth
+Sleuth is one of a new class of tools for doing differential expression.
+The papers that Fabio linked to us mostly looked at inclusion-exclusion
+events by looking at reads passing over splice junctions. This type of
+approach throws away a lot of information.
+
+There is some ambiguity when trying to assign an alignment to a
+particular transcript which introduces technical variation.
+The idea behind sleuth is to try to separate out the technical variation
+from the biological variation by bootstrap sampling to estimate the technical
+variation and removing it from the overall variation.
+
+```{r sleuth-setup}
+library(dplyr)
+library(sleuth)
+load("counts.RData")
+sample_dirs = file.path("..", "..", rownames(summarydata))
+sf_dirs = file.path(sample_dirs, "sailfish", "quant")
+names(sf_dirs) = rownames(summarydata)
+sfdata = summarydata[, "genotype", drop=FALSE]
+sfdata$sample = rownames(sfdata)
+sfdata$path = sf_dirs
+design = ~genotype
+```
+
+```{r sleuth-prep}
+mart <- biomaRt::useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
+t2g <- biomaRt::getBM(attributes = c("ensembl_transcript_id", "ensembl_gene_id",
+    "external_gene_name"), mart = mart)
+t2g <- dplyr::rename(t2g, target_id = ensembl_transcript_id,
+  ens_gene = ensembl_gene_id, ext_gene = external_gene_name)
+so = sleuth_prep(sfdata, design, target_mapping=t2g) %>% sleuth_fit()
+so = sleuth_wt(so, 'genotypeprpf8')
+so = sleuth_wt(so, 'genotypeprpf38')
+prpf8_tab = sleuth_results(so, 'genotypeprpf8')
+prpf38_tab = sleuth_results(so, 'genotypeprpf38')
+```
+
+We considered `r nrow(prpf8_tab)` transcripts in total.
+We find `r nrow(subset(prpf8_tab, qval < 0.05))` transcripts differentially
+expressed in `PRPF8` and `r nrow(subset(prpf38_tab, qval < 0.05))` transcripts
+differentially expressed in `PRPF38`.
+
+## MCL1
+MCL1 has three isoforms `r subset(prpf8_tab, ext_gene == "MCL1")$target_id`.
+Here we plot the boxplots of the bootstrap estimates for the counts for each
+transcript, colored by genotype of the samples.
+
+```{r MCL-boxplot}
+df = get_bootstraps(so, "ENST00000464132")
+df = rbind(df, get_bootstraps(so, "ENST00000369026"))
+df = rbind(df, get_bootstraps(so, "ENST00000307940"))
+ggplot(df, aes(sample, est_counts+1, fill=genotype)) +
+  geom_boxplot() +
+  facet_wrap(~target_id, ncol=1) +
+  theme_bw() +
+  scale_y_log10() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ylab("estimated counts") +
+  xlab("")
+```
+
+It looks like we can see the splice difference in `PRPF8` compared
+to `control` here. Specifically, an upregulation of `ENST00000307940`
+and `ENST00000464132`. All three transcripts are significantly different
+from `control` in both the `PRPF8` and `PRPF38` samples.
+
+Below we can see that `ENST00000369026` which is down in `PRPF8` and `PRPF38`
+is the longest isoform-- the other two transcripts are missing the 3' UTR of
+the transcript. There is some evidence then that loss of `PRPF8` and `PRPF38`
+leads to the loss of the 3' UTR of `MCL1`.
+
+```{r MCL-model}
+library("Gviz")
+library("GenomicRanges")
+library("biomaRt")
+library("BiocGenerics")
+bmt = BiomartGeneRegionTrack(genome="hg19", symbol="MCL1")
+plotTracks(bmt, transcriptAnnotation="transcript")
+```
