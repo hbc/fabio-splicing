@@ -95,3 +95,106 @@ library("BiocGenerics")
 bmt = BiomartGeneRegionTrack(genome="hg19", symbol="MCL1")
 plotTracks(bmt, transcriptAnnotation="transcript")
 ```
+
+Looking at the alignments for MCL1, we can see that there is a drop in the 3'
+UTR for PRPF8.
+
+![MCL1-sashimi](images/MCL1-sashimi.png)
+
+The 5'-3' bias, a measure of degradation, doesn't look much different between
+the samples, so that doesn't explain the difference.
+
+```{r 5primebias}
+library(ggplot2)
+ggplot(summarydata, aes(Name, X5.3.bias, fill=genotype)) +
+  geom_bar(stat='identity', position='dodge') + theme_bw() +
+  ylab("5'-3' bias") + xlab("") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r MCL1-subsets}
+mcl1 = subset(prpf8_tab, ext_gene == "MCL1")
+mcl1_considered = mcl1[complete.cases(mcl1),]$target_id
+mcl1_prpf8 = subset(prpf8_tab, ext_gene == "MCL1" & qval < 0.05 &
+                               complete.cases(prpf8_tab))
+mcl1_prpf38 = subset(prpf38_tab, ext_gene == "MCL1" & qval < 0.05 &
+                               complete.cases(prpf38_tab))
+```
+
+### PRPF8 compared to control
+```{r MCL1-PRPF8}
+knitr::kable(mcl1_prpf8)
+```
+
+### PRPF38 compared to control
+```{r MCL1-PRPF38}
+knitr::kable(mcl1_prpf38)
+```
+
+## RIOK3
+There are many more isoforms for RIOK3:
+
+```{r RIOK-3-model}
+bmt = BiomartGeneRegionTrack(genome="hg19", symbol="RIOK3")
+plotTracks(bmt, transcriptAnnotation="transcript")
+riok3 = subset(prpf8_tab, ext_gene == "RIOK3")
+riok3_considered = riok3[complete.cases(riok3),]$target_id
+riok3_prpf8 = subset(prpf8_tab, ext_gene == "RIOK3" & qval < 0.05 &
+                               complete.cases(prpf8_tab))
+riok3_prpf38 = subset(prpf38_tab, ext_gene == "RIOK3" & qval < 0.05 &
+                               complete.cases(prpf38_tab))
+```
+
+But of the `r nrow(riok3)`
+RIOK3 transcripts we looked at, we only had evidence for
+`r riok3_considered`.
+
+### PRPF8 compared to control
+```{r RIOK3-prpf8}
+knitr::kable(riok3_prpf8)
+```
+
+### PRPF38 compared to control
+```{r RIOK3-prpf38}
+knitr::kable(riok3_prpf38)
+```
+
+While significant, the q-value isn't super small. This is reflected if
+you eyeball boxplots of the bootstrap estimates:
+
+```{r RIOK3-boxplot}
+df = Map(function(x) {get_bootstraps(so, x)}, riok3_considered)
+df = do.call(rbind, df)
+ggplot(df, aes(sample, est_counts+1, fill=genotype)) +
+  geom_boxplot() +
+  facet_wrap(~target_id, ncol=1) +
+  theme_bw() +
+  scale_y_log10() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ylab("estimated counts") +
+  xlab("")
+```
+
+If we look at the alignments and log the counts, we can see that there might
+be a retained intron towards the 3' end of the transcript:
+
+![RIOK3-igv](images/RIOK3-igv.png)
+
+But it isn't the predominant isoform, it goes from 5 -> 20 counts or so if we
+mouse over the alignments. So there is some evidence that there is a retained
+intron event there if we visually inspect the alignments.
+
+There is a pseudogene for RIOK3, RIOK3P1 but we don't assign enough reads to
+affect the quantitation.
+
+# Full tables of results
+```{r write-results}
+write.table(prpf8_tab, file="control-vs-prpf8-sleuth.csv", quote=FALSE,
+            row.names=FALSE, col.names=TRUE, sep=",")
+write.table(prpf38_tab, file="control-vs-prpf38-sleuth.csv", quote=FALSE,
+            row.names=FALSE, col.names=TRUE, sep=",")
+```
+
+[control-vs-prpf8](control-vs-prpf8-sleuth.csv)
+
+[control-vs-prpf38](control-vs-prpf38-sleuth.csv)
