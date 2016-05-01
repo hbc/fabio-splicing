@@ -131,6 +131,41 @@ knitr::kable(mcl1_prpf8)
 knitr::kable(mcl1_prpf38)
 ```
 
+## PRPF38
+PRPF38 is knocked down but not out.
+
+```{r PRPF38-boxplot}
+prpf38_considered = subset(prpf8_tab, ext_gene == "PRPF38A")$target_id
+df = Map(function(x) {get_bootstraps(so, x)}, prpf38_considered)
+df = do.call(rbind, df)
+ggplot(df, aes(sample, est_counts+1, fill=genotype)) +
+  geom_boxplot() +
+  facet_wrap(~target_id, ncol=1) +
+  theme_bw() +
+  scale_y_log10() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ylab("estimated counts") +
+  xlab("")
+```
+
+## PRPF8
+The PRPF8 knockout seems less complete, there are only two isoforms that
+are knocked down in the PRPF8 samples:
+
+```{r PRPF8-boxplot}
+prpf8_considered = subset(prpf8_tab, ext_gene == "PRPF8" & !is.na(pval))$target_id
+df = Map(function(x) {get_bootstraps(so, x)}, prpf8_considered)
+df = do.call(rbind, df)
+ggplot(df, aes(sample, est_counts+1, fill=genotype)) +
+  geom_boxplot() +
+  facet_wrap(~target_id, ncol=1) +
+  theme_bw() +
+  scale_y_log10() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ylab("estimated counts") +
+  xlab("")
+```
+
 ## RIOK3
 There are many more isoforms for RIOK3:
 
