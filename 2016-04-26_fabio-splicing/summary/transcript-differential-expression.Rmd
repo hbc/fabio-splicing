@@ -49,8 +49,8 @@ t2g <- dplyr::rename(t2g, target_id = ensembl_transcript_id,
 so = sleuth_prep(sfdata, design, target_mapping=t2g) %>% sleuth_fit()
 so = sleuth_wt(so, 'genotypeprpf8')
 so = sleuth_wt(so, 'genotypeprpf38')
-prpf8_tab = sleuth_results(so, 'genotypeprpf8')
-prpf38_tab = sleuth_results(so, 'genotypeprpf38')
+prpf8_tab = sleuth_results(so, 'genotypeprpf8', show_all=TRUE)
+prpf38_tab = sleuth_results(so, 'genotypeprpf38', show_all=TRUE)
 ```
 
 We considered `r nrow(prpf8_tab)` transcripts in total.
@@ -223,7 +223,14 @@ There is a pseudogene for RIOK3, RIOK3P1 but we don't assign enough reads to
 affect the quantitation.
 
 # Full tables of results
+We'll add an indicator to the tables that says whether or not a gene has
+reciprocal splicing changes before writing them out.
+
 ```{r write-results}
+prpf8_tab = prpf8_tab %>% na.omit() %>% group_by(ens_gene) %>%
+  mutate(reciprocal=(sum(b > 0 & qval < 0.05) > 0) & sum(b < 0 & qval < 0.05) > 0 & length(ens_gene) > 1) %>% as.data.frame()
+prpf38_tab = prpf38_tab %>% na.omit() %>% group_by(ens_gene) %>%
+  mutate(reciprocal=(sum(b > 0 & qval < 0.05) > 0) & sum(b < 0 & qval < 0.05) > 0 & length(ens_gene) > 1) %>% as.data.frame()
 write.table(prpf8_tab, file="control-vs-prpf8-sleuth.csv", quote=FALSE,
             row.names=FALSE, col.names=TRUE, sep=",")
 write.table(prpf38_tab, file="control-vs-prpf38-sleuth.csv", quote=FALSE,

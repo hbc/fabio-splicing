@@ -253,9 +253,9 @@ div.tocify {
 &gt;<span class="st"> </span>so =<span class="st"> </span><span class="kw">sleuth_prep</span>(sfdata, design, <span class="dt">target_mapping =</span> t2g) %&gt;%<span class="st"> </span><span class="kw">sleuth_fit</span>()
 &gt;<span class="st"> </span>so =<span class="st"> </span><span class="kw">sleuth_wt</span>(so, <span class="st">&quot;genotypeprpf8&quot;</span>)
 &gt;<span class="st"> </span>so =<span class="st"> </span><span class="kw">sleuth_wt</span>(so, <span class="st">&quot;genotypeprpf38&quot;</span>)
-&gt;<span class="st"> </span>prpf8_tab =<span class="st"> </span><span class="kw">sleuth_results</span>(so, <span class="st">&quot;genotypeprpf8&quot;</span>)
-&gt;<span class="st"> </span>prpf38_tab =<span class="st"> </span><span class="kw">sleuth_results</span>(so, <span class="st">&quot;genotypeprpf38&quot;</span>)</code></pre>
-<p>We considered 196501 transcripts in total. We find 29680 transcripts differentially expressed in <code>PRPF8</code> and 16955 transcripts differentially expressed in <code>PRPF38</code>.</p>
+&gt;<span class="st"> </span>prpf8_tab =<span class="st"> </span><span class="kw">sleuth_results</span>(so, <span class="st">&quot;genotypeprpf8&quot;</span>, <span class="dt">show_all =</span> <span class="ot">TRUE</span>)
+&gt;<span class="st"> </span>prpf38_tab =<span class="st"> </span><span class="kw">sleuth_results</span>(so, <span class="st">&quot;genotypeprpf38&quot;</span>, <span class="dt">show_all =</span> <span class="ot">TRUE</span>)</code></pre>
+<p>We considered 196501 transcripts in total. We find 29680 transcripts differentially expressed in <code>PRPF8</code> and 16957 transcripts differentially expressed in <code>PRPF38</code>.</p>
 <div id="mcl1" class="section level2">
 <h2>MCL1</h2>
 <p>MCL1 has three isoforms ENST00000464132, ENST00000369026, ENST00000307940. Here we plot the boxplots of the bootstrap estimates for the counts for each transcript, colored by genotype of the samples.</p>
@@ -318,13 +318,13 @@ div.tocify {
 <td align="right">0</td>
 <td align="right">0</td>
 <td align="right">2.3445060</td>
-<td align="right">0.1464391</td>
+<td align="right">0.1464367</td>
 <td align="right">5.132820</td>
 <td align="right">1.0690173</td>
 <td align="right">0.0396757</td>
 <td align="right">0.0115420</td>
-<td align="right">0.0139353</td>
-<td align="right">0.0139353</td>
+<td align="right">0.0139336</td>
+<td align="right">0.0139336</td>
 <td align="left">ENSG00000143384</td>
 <td align="left">MCL1</td>
 </tr>
@@ -334,29 +334,29 @@ div.tocify {
 <td align="right">0</td>
 <td align="right">0</td>
 <td align="right">-0.5263093</td>
-<td align="right">0.0330074</td>
+<td align="right">0.0330079</td>
 <td align="right">9.508660</td>
 <td align="right">0.0549156</td>
 <td align="right">0.0000995</td>
 <td align="right">0.0021163</td>
-<td align="right">0.0026242</td>
-<td align="right">0.0026242</td>
+<td align="right">0.0026243</td>
+<td align="right">0.0026243</td>
 <td align="left">ENSG00000143384</td>
 <td align="left">MCL1</td>
 </tr>
 <tr class="odd">
-<td align="left">8225</td>
+<td align="left">8226</td>
 <td align="left">ENST00000307940</td>
 <td align="right">0</td>
 <td align="right">0</td>
 <td align="right">2.6492689</td>
-<td align="right">0.3807511</td>
+<td align="right">0.3807516</td>
 <td align="right">3.436454</td>
 <td align="right">1.4956027</td>
 <td align="right">0.2517913</td>
 <td align="right">0.0058972</td>
-<td align="right">0.1106372</td>
-<td align="right">0.1106372</td>
+<td align="right">0.1106381</td>
+<td align="right">0.1106381</td>
 <td align="left">ENSG00000143384</td>
 <td align="left">MCL1</td>
 </tr>
@@ -392,13 +392,13 @@ div.tocify {
 <td align="right">0.00e+00</td>
 <td align="right">0.0000000</td>
 <td align="right">1.5999886</td>
-<td align="right">0.1464391</td>
+<td align="right">0.1464367</td>
 <td align="right">5.132820</td>
 <td align="right">1.0690173</td>
 <td align="right">0.0396757</td>
 <td align="right">0.0115420</td>
-<td align="right">0.0139353</td>
-<td align="right">0.0139353</td>
+<td align="right">0.0139336</td>
+<td align="right">0.0139336</td>
 <td align="left">ENSG00000143384</td>
 <td align="left">MCL1</td>
 </tr>
@@ -408,13 +408,13 @@ div.tocify {
 <td align="right">1.93e-05</td>
 <td align="right">0.0001689</td>
 <td align="right">-0.1410187</td>
-<td align="right">0.0330074</td>
+<td align="right">0.0330079</td>
 <td align="right">9.508660</td>
 <td align="right">0.0549156</td>
 <td align="right">0.0000995</td>
 <td align="right">0.0021163</td>
-<td align="right">0.0026242</td>
-<td align="right">0.0026242</td>
+<td align="right">0.0026243</td>
+<td align="right">0.0026243</td>
 <td align="left">ENSG00000143384</td>
 <td align="left">MCL1</td>
 </tr>
@@ -424,13 +424,13 @@ div.tocify {
 <td align="right">1.99e-05</td>
 <td align="right">0.0001731</td>
 <td align="right">1.6244402</td>
-<td align="right">0.3807511</td>
+<td align="right">0.3807516</td>
 <td align="right">3.436454</td>
 <td align="right">1.4956027</td>
 <td align="right">0.2517913</td>
 <td align="right">0.0058972</td>
-<td align="right">0.1106372</td>
-<td align="right">0.1106372</td>
+<td align="right">0.1106381</td>
+<td align="right">0.1106381</td>
 <td align="left">ENSG00000143384</td>
 <td align="left">MCL1</td>
 </tr>
@@ -499,7 +499,7 @@ div.tocify {
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">16282</td>
+<td align="left">16283</td>
 <td align="left">ENST00000581220</td>
 <td align="right">0.0000462</td>
 <td align="right">0.0002044</td>
@@ -509,7 +509,7 @@ div.tocify {
 <td align="right">0.0933861</td>
 <td align="right">0.0297702</td>
 <td align="right">0.0136596</td>
-<td align="right">0.0057821</td>
+<td align="right">0.0057807</td>
 <td align="right">0.0136596</td>
 <td align="left">ENSG00000101782</td>
 <td align="left">RIOK3</td>
@@ -525,7 +525,7 @@ div.tocify {
 <td align="right">0.0558919</td>
 <td align="right">0.0178767</td>
 <td align="right">0.0186406</td>
-<td align="right">0.0052117</td>
+<td align="right">0.0052106</td>
 <td align="right">0.0186406</td>
 <td align="left">ENSG00000101782</td>
 <td align="left">RIOK3</td>
@@ -557,17 +557,17 @@ div.tocify {
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">13021</td>
+<td align="left">13022</td>
 <td align="left">ENST00000581220</td>
 <td align="right">0.001939</td>
-<td align="right">0.0107365</td>
+<td align="right">0.0107357</td>
 <td align="right">0.4085111</td>
 <td align="right">0.1318026</td>
 <td align="right">6.474222</td>
 <td align="right">0.0933861</td>
 <td align="right">0.0297702</td>
 <td align="right">0.0136596</td>
-<td align="right">0.0057821</td>
+<td align="right">0.0057807</td>
 <td align="right">0.0136596</td>
 <td align="left">ENSG00000101782</td>
 <td align="left">RIOK3</td>
@@ -594,7 +594,14 @@ div.tocify {
 </div>
 <div id="full-tables-of-results" class="section level1">
 <h1>Full tables of results</h1>
-<pre class="sourceCode r"><code class="sourceCode r">&gt;<span class="st"> </span><span class="kw">write.table</span>(prpf8_tab, <span class="dt">file =</span> <span class="st">&quot;control-vs-prpf8-sleuth.csv&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>, 
+<p>We’ll add an indicator to the tables that says whether or not a gene has reciprocal splicing changes before writing them out.</p>
+<pre class="sourceCode r"><code class="sourceCode r">&gt;<span class="st"> </span>prpf8_tab =<span class="st"> </span>prpf8_tab %&gt;%<span class="st"> </span><span class="kw">na.omit</span>() %&gt;%<span class="st"> </span><span class="kw">group_by</span>(ens_gene) %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">reciprocal =</span> (<span class="kw">sum</span>(b &gt;<span class="st"> </span>
++<span class="st">     </span><span class="dv">0</span> &amp;<span class="st"> </span>qval &lt;<span class="st"> </span><span class="fl">0.05</span>) &gt;<span class="st"> </span><span class="dv">0</span>) &amp;<span class="st"> </span><span class="kw">sum</span>(b &lt;<span class="st"> </span><span class="dv">0</span> &amp;<span class="st"> </span>qval &lt;<span class="st"> </span><span class="fl">0.05</span>) &gt;<span class="st"> </span><span class="dv">0</span> &amp;<span class="st"> </span><span class="kw">length</span>(ens_gene) &gt;<span class="st"> </span>
++<span class="st">     </span><span class="dv">1</span>) %&gt;%<span class="st"> </span><span class="kw">as.data.frame</span>()
+&gt;<span class="st"> </span>prpf38_tab =<span class="st"> </span>prpf38_tab %&gt;%<span class="st"> </span><span class="kw">na.omit</span>() %&gt;%<span class="st"> </span><span class="kw">group_by</span>(ens_gene) %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">reciprocal =</span> (<span class="kw">sum</span>(b &gt;<span class="st"> </span>
++<span class="st">     </span><span class="dv">0</span> &amp;<span class="st"> </span>qval &lt;<span class="st"> </span><span class="fl">0.05</span>) &gt;<span class="st"> </span><span class="dv">0</span>) &amp;<span class="st"> </span><span class="kw">sum</span>(b &lt;<span class="st"> </span><span class="dv">0</span> &amp;<span class="st"> </span>qval &lt;<span class="st"> </span><span class="fl">0.05</span>) &gt;<span class="st"> </span><span class="dv">0</span> &amp;<span class="st"> </span><span class="kw">length</span>(ens_gene) &gt;<span class="st"> </span>
++<span class="st">     </span><span class="dv">1</span>) %&gt;%<span class="st"> </span><span class="kw">as.data.frame</span>()
+&gt;<span class="st"> </span><span class="kw">write.table</span>(prpf8_tab, <span class="dt">file =</span> <span class="st">&quot;control-vs-prpf8-sleuth.csv&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>, 
 +<span class="st">     </span><span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">col.names =</span> <span class="ot">TRUE</span>, <span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>)
 &gt;<span class="st"> </span><span class="kw">write.table</span>(prpf38_tab, <span class="dt">file =</span> <span class="st">&quot;control-vs-prpf38-sleuth.csv&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>, 
 +<span class="st">     </span><span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">col.names =</span> <span class="ot">TRUE</span>, <span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>)</code></pre>
