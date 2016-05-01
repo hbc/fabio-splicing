@@ -486,3 +486,7 @@ move on to event level descriptions which will require more work.
 [PRPF8 vs control results](prpf8-vs-control.csv)
 
 [PRPF38 vs control results](prpf38-vs-control.csv)
+
+```{r write-rdata}
+save(counts, txi.salmon, summarydata, file="counts.RData")
+```
