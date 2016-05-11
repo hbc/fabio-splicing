@@ -101,6 +101,11 @@ AL: Alternative Last Exon
 <strand>: either '+' or '-'
 ```
 
+# Links to data
+[PRPF8 retained intron](prpf8-RI.csv)
+
+[PRPF38 retained intron](prpf38-RI.csv)
+
 ```{r write-results}
 write.table(prpf8_results, file="prpf8-RI.csv", sep=",", quote=FALSE,
             row.names=TRUE, col.names=TRUE)
