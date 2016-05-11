@@ -1,0 +1,109 @@
+---
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    highlight: zenburn
+    theme: flatly
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(tidy=TRUE, highlight=TRUE, dev="png",
+                      cache=TRUE, cache.lazy=FALSE, highlight=TRUE, autodep=TRUE,
+                      warning=FALSE, error=FALSE,
+                      message=FALSE, prompt=TRUE, comment='', fig.cap='')
+```
+
+# Retained intron analysis with suppa
+We generated percent spliced in (PSI) or $\Psi$ numbers for each sample
+using [suppa](https://bitbucket.org/regulatorygenomicsupf/suppa). I haven't
+used suppa before and it can only pick out retained intron events that
+appear in the GTF file, not discover new events. There are ~ 5500 events
+annotated so hopefully this will be enough to see if there are broad
+changes and pick out a couple of hits.
+
+```{r load-data}
+load("counts.RData")
+```
+
+
+```{r load-suppa}
+suppa = read.table("suppa/ie-events.psi")
+control = rownames(summarydata)[grepl("^control", rownames(summarydata))]
+prpf8 = rownames(summarydata)[grepl("^prpf8", rownames(summarydata))]
+prpf38 = rownames(summarydata)[grepl("^prpf38", rownames(summarydata))]
+```
+
+```{r wilcox-test-functions}
+wc_gene = function(row, x_idx, y_idx) {
+  row[row == -1] = 0
+  row = unlist(as.list(row))
+  xmean = mean(row[x_idx])
+  ymean = mean(row[y_idx])
+  diff = xmean - ymean
+  x = row[x_idx]
+  y = row[y_idx]
+  wt = wilcox.test(x, y)
+  return(data.frame(xmean=xmean, ymean=ymean, diff=diff,
+                    W=wt$statistic, pvalue=wt$p.value))}
+
+suppa_test = function(suppa, x_idx, y_idx){
+  res = apply(suppa, 1, function(x) wc_gene(x, x_idx, y_idx))
+  res.df = data.frame(do.call(rbind, res))
+  res.df$qvalue = p.adjust(res.df$pvalue, method="BH")
+  return(res.df)}
+
+prpf8_results = suppa_test(suppa, control, prpf8)
+prpf38_results = suppa_test(suppa, control, prpf38)
+```
+
+We don't have enough samples to do a great job with the Wilcoxon rank sum test
+for each individual event, though we can pick up some differences. We can look
+at the overall difference in splicing between the samples.
+
+
+```{r density-plots}
+ggplot(prpf8_results, aes(diff)) + geom_density() + scale_y_sqrt() +
+  theme_bw() + ggtitle("PRPF8")
+ggplot(prpf38_results, aes(diff)) + geom_density() + scale_y_sqrt() +
+  theme_bw() + ggtitle("PRPF38")
+```
+
+If you squint, there does seem to be an enrichment for higher retained intron
+events in PRPF8 and PRPF38, there's a slightly higher negative shoulder. It
+is not a huge effect though.
+
+Below we test if the difference of (control RI PSI) - (knockout RI PSI)
+is less than zero (so higher PSI for retained intron events in the knockout samples)
+
+```{r prpf8-t-test}
+wilcox.test(prpf38_results$diff, alternative="less")
+wilcox.test(prpf8_results$diff, alternative="less")
+```
+
+The event IDs in this table are formatted like [this](https://bitbucket.org/regulatorygenomicsupf/suppa/src)
+
+```
+<gene_id>;<event-type>:<seqname>:<coordinates-of-the-event>:<strand>
+where:
+<gene_id>: is the gene where the even happens
+<event-type>: correspond to the two letters code of the event from the following list.
+SE: Skipping Exon
+A5: Alternative 5' Splice Site
+A3: Alternative 3' Splice Site
+MX: Mutually Exclusive Exon
+RI: Retained Intron
+AF: Alternative First Exon
+AL: Alternative Last Exon
+<seqname>: seqname explained above
+<coordinates-of-the-event>: the coordinates of the event depends on the type of event
+<strand>: either '+' or '-'
+```
+
+```{r write-results}
+write.table(prpf8_results, file="prpf8-RI.csv", sep=",", quote=FALSE,
+            row.names=TRUE, col.names=TRUE)
+write.table(prpf38_results, file="prpf38-RI.csv", sep=",", quote=FALSE,
+            row.names=TRUE, col.names=TRUE)
+```
