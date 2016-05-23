@@ -247,9 +247,11 @@ div.tocify {
 &gt;<span class="st"> </span><span class="kw">library</span>(dplyr)
 &gt;<span class="st"> </span><span class="kw">library</span>(tidyr)
 &gt;<span class="st"> </span><span class="kw">library</span>(ggplot2)
-&gt;<span class="st"> </span>misorifn =<span class="st"> &quot;miso/combined-miso.csv&quot;</span>
-&gt;<span class="st"> </span>misori =<span class="st"> </span><span class="kw">read_csv</span>(misorifn) %&gt;%<span class="st"> </span>tidyr::<span class="kw">separate</span>(samplename, <span class="kw">c</span>(<span class="st">&quot;genotype&quot;</span>, <span class="st">&quot;replicate&quot;</span>), 
-+<span class="st">     </span><span class="dt">sep =</span> <span class="st">&quot;_&quot;</span>)</code></pre>
+&gt;<span class="st"> </span>misorifn =<span class="st"> &quot;miso/combined-miso.tsv&quot;</span>
+&gt;<span class="st"> </span>misori =<span class="st"> </span><span class="kw">read_tsv</span>(misorifn) %&gt;%<span class="st"> </span>tidyr::<span class="kw">separate</span>(samplename, <span class="kw">c</span>(<span class="st">&quot;genotype&quot;</span>, <span class="st">&quot;replicate&quot;</span>), 
++<span class="st">     </span><span class="dt">sep =</span> <span class="st">&quot;_&quot;</span>)
+&gt;<span class="st"> </span>events2gene =<span class="st"> </span><span class="kw">read_tsv</span>(<span class="st">&quot;miso/event-to-gene.tsv&quot;</span>, <span class="dt">col_names =</span> <span class="ot">FALSE</span>)
+&gt;<span class="st"> </span><span class="kw">colnames</span>(events2gene) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;event_name&quot;</span>, <span class="st">&quot;symbol&quot;</span>)</code></pre>
 <p>I grouped the samples by genotype and calculated the mean PSI value for each event. I kept only events where a PSI value was calculated for an event in all genotypes. Then I plotted the mean PSI value for the various genotypes against each other, similar to figure 3C in the paper that was linked.</p>
 <pre class="sourceCode r"><code class="sourceCode r">&gt;<span class="st"> </span>risummary =<span class="st"> </span>misori %&gt;%<span class="st"> </span>dplyr::<span class="kw">filter</span>(eventtype ==<span class="st"> &quot;RI&quot;</span>) %&gt;%<span class="st"> </span>dplyr::<span class="kw">group_by</span>(event_name, 
 +<span class="st">     </span>genotype) %&gt;%<span class="st"> </span>dplyr::<span class="kw">summarise</span>(<span class="dt">mpsi =</span> <span class="kw">mean</span>(miso_posterior_mean)) %&gt;%<span class="st"> </span>tidyr::<span class="kw">spread</span>(genotype, 
@@ -292,7 +294,8 @@ W = 8279400, p-value = 1.873e-07
 alternative hypothesis: true location shift is less than 0</code></pre>
 <div id="table-download" class="section level2">
 <h2>Table download</h2>
-<pre class="sourceCode r"><code class="sourceCode r">&gt;<span class="st"> </span><span class="kw">write.table</span>(risummary, <span class="dt">file =</span> <span class="st">&quot;RI_summary.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">col.names =</span> <span class="ot">TRUE</span>, 
+<pre class="sourceCode r"><code class="sourceCode r">&gt;<span class="st"> </span>risummary =<span class="st"> </span>risummary %&gt;%<span class="st"> </span><span class="kw">left_join</span>(events2gene, <span class="dt">by =</span> <span class="st">&quot;event_name&quot;</span>)
+&gt;<span class="st"> </span><span class="kw">write.table</span>(risummary, <span class="dt">file =</span> <span class="st">&quot;RI_summary.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">col.names =</span> <span class="ot">TRUE</span>, 
 +<span class="st">     </span><span class="dt">quote =</span> <span class="ot">FALSE</span>, <span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>)</code></pre>
 <p><a href="miso/combined-miso.csv.gz">raw-table</a></p>
 <p><a href="RI_summary.csv">summary-table</a></p>

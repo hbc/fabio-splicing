@@ -17,14 +17,17 @@ knitr::opts_chunk$set(tidy=TRUE, highlight=TRUE, dev="png",
 
 We created a tidy summary of MISO results for retained intron events
 generated from the Ensemble gene annotation for GRCh37 version 68.
+
 ```{r load-misori}
 library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-misorifn = "miso/combined-miso.csv"
-misori = read_csv(misorifn) %>%
+misorifn = "miso/combined-miso.tsv"
+misori = read_tsv(misorifn) %>%
   tidyr::separate(samplename, c("genotype", "replicate"), sep="_")
+events2gene = read_tsv("miso/event-to-gene.tsv", col_names=FALSE)
+colnames(events2gene) = c("event_name", "symbol")
 ```
 
 I grouped the samples by genotype and calculated the mean PSI value for
@@ -83,8 +86,10 @@ wilcox.test(risummary$control, risummary$prpf38, alternative="less")
 
 ## Table download
 ```{r write-tables}
+risummary = risummary %>% left_join(events2gene, by="event_name")
 write.table(risummary, file="RI_summary.csv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep=",")
 ```
+
 [raw-table](miso/combined-miso.csv.gz)
 
 [summary-table](RI_summary.csv)
