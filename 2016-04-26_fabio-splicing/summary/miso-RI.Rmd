@@ -1,0 +1,82 @@
+---
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    highlight: zenburn
+    theme: flatly
+---
+
+```{r setup-knitr, echo=FALSE}
+knitr::opts_chunk$set(tidy=TRUE, highlight=TRUE, dev="png",
+                      cache=TRUE, cache.lazy=FALSE, highlight=TRUE, autodep=TRUE,
+                      warning=FALSE, error=FALSE,
+                      message=FALSE, prompt=TRUE, comment='', fig.cap='')
+```
+
+We created a tidy summary of MISO results for retained intron events
+generated from the Ensemble gene annotation for GRCh37 version 68.
+```{r load-misori}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+misorifn = "miso/combined-miso.csv"
+misori = read_csv(misorifn) %>%
+  tidyr::separate(samplename, c("genotype", "replicate"), sep="_")
+```
+
+I grouped the samples by genotype and calculated the mean PSI value for
+each event. I kept only events where a PSI value was calculated for an
+event in all genotypes. Then I plotted the mean PSI value for the various
+genotypes against each other, similar to figure 3C in the paper that was
+linked.
+
+```{r misori-psi-take}
+risummary = misori %>%
+  dplyr::filter(eventtype == "RI") %>%
+  dplyr::group_by(event_name, genotype) %>%
+  dplyr::summarise(mpsi=mean(miso_posterior_mean)) %>%
+  tidyr::spread(genotype, mpsi)
+risummary = risummary[complete.cases(risummary),]
+risummary = risummary %>%
+  mutate(prpf8_diff = ifelse(control - prpf8 > 0.10, "lower",
+                      ifelse(control - prpf8 < -0.10, "higher", "same"))) %>%
+  mutate(prpf38_diff = ifelse(control - prpf38 > 0.10, "lower",
+                       ifelse(control - prpf38 < -0.10, "higher", "same")))
+```
+
+
+
+```{r prpf8-ri}
+ggplot(risummary, aes(control, prpf8, color=prpf8_diff)) +
+  geom_point(alpha=0.3, size=1) +
+  geom_abline() +
+  xlab("PSI, control") +
+  ylab("PSI, PRPF8") +
+  theme_bw()
+```
+
+```{r prpf38-ri}
+ggplot(risummary, aes(control, prpf38, color=prpf38_diff)) +
+  geom_point(alpha=0.3, size=1) +
+  geom_abline() +
+  xlab("PSI, control") +
+  ylab("PSI, PRPF38") +
+  theme_bw()
+```
+
+Here is a summary of the counts of events for being higher, lower or the same
+in PRPF8 compared to control, where higher and lower are different by 10% PSI.
+```{r prf8-table}
+table(risummary$prpf8_diff)
+wilcox.test(risummary$control, risummary$prpf8, alternative="less")
+```
+
+And the same table for PRPF38
+
+```{r prpf38-table}
+table(risummary$prpf38_diff)
+wilcox.test(risummary$control, risummary$prpf38, alternative="less")
+```
