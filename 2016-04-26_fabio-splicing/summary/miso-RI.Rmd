@@ -80,3 +80,11 @@ And the same table for PRPF38
 table(risummary$prpf38_diff)
 wilcox.test(risummary$control, risummary$prpf38, alternative="less")
 ```
+
+## Table download
+```{r write-tables}
+write.table(risummary, file="RI_summary.csv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep=",")
+```
+[raw-table](miso/combined-miso.csv.gz)
+
+[summary-table](RI_summary.csv)
