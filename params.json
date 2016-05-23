@@ -1,6 +1,6 @@
 {
   "name": "Fabio-splicing",
   "tagline": "",
-  "body": "# QC and gene-level differential expression\r\n[Report](https://rawgit.com/hbc/fabio-splicing/master/2016-04-26_fabio-splicing/summary/qc-summary.html)\r\n# Transcript differential expression\r\n[Report](https://rawgit.com/hbc/fabio-splicing/master/2016-04-26_fabio-splicing/summary/transcript-differential-expression.html)\r\n# Retained intron analysis\r\n[Report](https://rawgit.com/hbc/fabio-splicing/master/2016-04-26_fabio-splicing/summary/retained-introns.html)",
+  "body": "# QC and gene-level differential expression\r\n[Report](https://rawgit.com/hbc/fabio-splicing/master/2016-04-26_fabio-splicing/summary/qc-summary.html)\r\n# Transcript differential expression\r\n[Report](https://rawgit.com/hbc/fabio-splicing/master/2016-04-26_fabio-splicing/summary/transcript-differential-expression.html)\r\n# Retained intron analysis\r\n[Report](https://rawgit.com/hbc/fabio-splicing/master/2016-04-26_fabio-splicing/summary/retained-introns.html)\r\n# Retained intron analysis with MISO\r\n[Report](https://rawgit.com/hbc/fabio-splicing/master/2016-04-26_fabio-splicing/summary/miso-RI.html)",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
