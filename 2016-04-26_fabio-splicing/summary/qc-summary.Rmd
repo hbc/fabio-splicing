@@ -501,18 +501,22 @@ bml$prpf38fc = ifelse(prpf38toplot[rownames(bml),]$log2FoldChange < -1.32, "less
 ```{r prpf8-control-geneplot}
 library(cowplot)
 library(viridis)
-ggplot(bml, aes(control, prpf8, color=prpf8fc)) + geom_point() +
+ggplot(bml, aes(control, prpf8, color=prpf8fc)) + geom_point(size=0.5) +
   scale_x_log10() +
   scale_y_log10() +
   scale_color_viridis(discrete=TRUE) +
-  theme(text=element_text(family='Gill Sans'))
+  theme(text=element_text(family='Gill Sans')) +
+  xlab("control") +
+  ylab("PRPF8 KO")
 ```
 
 ## PRPF38 vs Control
 ```{r prpf38-control-geneplot}
-ggplot(bml, aes(control, prpf38, color=prpf38fc)) + geom_point() +
+ggplot(bml, aes(control, prpf38, color=prpf38fc)) + geom_point(size=0.5) +
   scale_x_log10() +
   scale_y_log10() +
   scale_color_viridis(discrete=TRUE) +
-  theme(text=element_text(family='Gill Sans'))
+  theme(text=element_text(family='Gill Sans')) +
+  xlab("control") +
+  ylab("PRPF38 KO")
 ```
