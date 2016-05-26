@@ -447,29 +447,8 @@ write.table(prpf38, file="prpf38-vs-control.csv", col.names=TRUE, row.names=FALS
             quote=FALSE, sep=",")
 ```
 
-ihere are `r nrow(subset(prpf38, padj < 0.05))` genes differentially expressed
+There are `r nrow(subset(prpf38, padj < 0.05))` genes differentially expressed
 between the `PRPF38` and the `control` samples.
-
-### Mean-vs-Variation
-This is a diagnostic plot to make sure we aren't calling genes differentially
-expressed just because we didn't model the mean-variance relationship very well.
-These look good, most of our calls are within what we'd expect.
-
-```{r DEGreport-MV}
-plots = list()
-for(i in seq(length(all_results))) {
-  g <- get_groups(summarydata, names(all_results)[i], condition)
-  if(length(g[[1]]) < 2 | length(g[[2]]) < 2) {
-     next
-   }
-  plots[[i]] = degMV(g[[1]], g[[2]], all_results[[i]]$pvalue, counts(dds,normalized=TRUE)) +
-  theme_bw(base_size = scale_factor) +
-  ggtitle(paste0("Mean-vs-Variation for ", names(all_results)[i]))
-}
-if(length(plots) > 0) {
-    do.call(grid.arrange,plots)
-}
-```
 
 # Summary
 These libraries look awesome, some of the best RNA-seq libraries I have seen in
@@ -489,4 +468,51 @@ move on to event level descriptions which will require more work.
 
 ```{r write-rdata}
 save(counts, txi.salmon, summarydata, file="counts.RData")
+```
+
+# Gene expression plots
+These plots are modeled after the figures in `Modulation of splicing catalysis
+for therapeutic targeting of leukemia with mutations in genes encoding
+spliceosomal proteins`. They are basically MA plots rotated 45 degrees, but with
+coloring by fold change cutoffs instead of the results of statistical tests.
+
+These are PNGs so not suitable for publication, but we can twiddle a parameter
+in these reports to generate PDFs instead later on.
+
+## PRPF8 vs Control
+
+```{r get-basemeans-per-level}
+baseMeanPerLevel = function(lvl) {
+  rowMeans(counts(dds, normalized=TRUE)[, dds$genotype == lvl])
+}
+bml = data.frame(sapply(levels(dds$genotype), baseMeanPerLevel))
+prpf8toplot = unique(data.frame(id=prpf8$id, log2FoldChange=prpf8$log2FoldChange))
+rownames(prpf8toplot) = prpf8toplot$id
+bml$prpf8fc = ifelse(prpf8toplot[rownames(bml),]$log2FoldChange < -1.32, "less",
+              ifelse(prpf8toplot[rownames(bml),]$log2FoldChange > 1.32, "greater",
+                     "same"))
+prpf38toplot = unique(data.frame(id=prpf38$id, log2FoldChange=prpf38$log2FoldChange))
+rownames(prpf38toplot) = prpf38toplot$id
+bml$prpf38fc = ifelse(prpf38toplot[rownames(bml),]$log2FoldChange < -1.32, "less",
+               ifelse(prpf38toplot[rownames(bml),]$log2FoldChange > 1.32, "greater",
+                      "same"))
+```
+
+```{r prpf8-control-geneplot}
+library(cowplot)
+library(viridis)
+ggplot(bml, aes(control, prpf8, color=prpf8fc)) + geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  scale_color_viridis(discrete=TRUE) +
+  theme(text=element_text(family='Gill Sans'))
+```
+
+## PRPF38 vs Control
+```{r prpf38-control-geneplot}
+ggplot(bml, aes(control, prpf38, color=prpf38fc)) + geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  scale_color_viridis(discrete=TRUE) +
+  theme(text=element_text(family='Gill Sans'))
 ```
