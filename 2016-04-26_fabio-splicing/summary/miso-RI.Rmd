@@ -23,8 +23,10 @@ library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-misorifn = "miso/combined-miso.tsv"
-misori = read_tsv(misorifn) %>%
+library(cowplot)
+library(viridis)
+misofn = "miso/new/combined-miso.tsv"
+miso = read_tsv(misofn) %>%
   tidyr::separate(samplename, c("genotype", "replicate"), sep="_")
 events2gene = read_tsv("miso/event-to-gene.tsv", col_names=FALSE)
 colnames(events2gene) = c("event_name", "symbol")
@@ -36,33 +38,35 @@ event in all genotypes. Then I plotted the mean PSI value for the various
 genotypes against each other, similar to figure 3C in the paper that was
 linked.
 
-```{r misori-psi-take}
-risummary = misori %>%
-  dplyr::filter(eventtype == "RI") %>%
-  dplyr::group_by(event_name, genotype) %>%
+# Retained introns
+
+```{r summarise}
+misosum = miso %>%
+  dplyr::group_by(eventtype, event_name, genotype) %>%
   dplyr::summarise(mpsi=mean(miso_posterior_mean)) %>%
   tidyr::spread(genotype, mpsi)
-risummary = risummary[complete.cases(risummary),]
-risummary = risummary %>%
+misosum = misosum[complete.cases(misosum),]
+misosum = misosum %>%
   mutate(prpf8_diff = ifelse(control - prpf8 > 0.10, "lower",
                       ifelse(control - prpf8 < -0.10, "higher", "same"))) %>%
   mutate(prpf38_diff = ifelse(control - prpf38 > 0.10, "lower",
                        ifelse(control - prpf38 < -0.10, "higher", "same")))
 ```
 
-
-
+## PSI plots
 ```{r prpf8-ri}
-ggplot(risummary, aes(control, prpf8, color=prpf8_diff)) +
+ggplot(misosum, aes(control, prpf8, color=prpf8_diff)) +
+  facet_wrap(~eventtype) +
   geom_point(alpha=0.3, size=1) +
   geom_abline() +
   xlab("PSI, control") +
   ylab("PSI, PRPF8") +
-  theme_bw()
+  scale_color_viridis(discrete=TRUE)
 ```
 
 ```{r prpf38-ri}
-ggplot(risummary, aes(control, prpf38, color=prpf38_diff)) +
+ggplot(misosum, aes(control, prpf38, color=prpf38_diff)) +
+  facet_wrap(~eventtype) +
   geom_point(alpha=0.3, size=1) +
   geom_abline() +
   xlab("PSI, control") +
@@ -70,26 +74,61 @@ ggplot(risummary, aes(control, prpf38, color=prpf38_diff)) +
   theme_bw()
 ```
 
+# Wilcoxon tests
+
 Here is a summary of the counts of events for being higher, lower or the same
 in PRPF8 compared to control, where higher and lower are different by 10% PSI.
+
+## RI
+
+### PRPF8
+
 ```{r prf8-table}
-table(risummary$prpf8_diff)
-wilcox.test(risummary$control, risummary$prpf8, alternative="less")
+risum = subset(misosum, eventtype == "RI")
+table(risum$prpf8_diff)
+wilcox.test(risum$control, risum$prpf8, alternative="less")
 ```
 
-And the same table for PRPF38
+### PRPF38
 
 ```{r prpf38-table}
-table(risummary$prpf38_diff)
-wilcox.test(risummary$control, risummary$prpf38, alternative="less")
+table(risum$prpf38_diff)
+wilcox.test(risum$control, risum$prpf38, alternative="less")
 ```
 
-## Table download
+### Table download
 ```{r write-tables}
-risummary = risummary %>% left_join(events2gene, by="event_name")
-write.table(risummary, file="RI_summary.csv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep=",")
+risum = risum %>% left_join(events2gene, by="event_name")
+write.table(risum, file="RI_summary.csv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep=",")
 ```
 
-[raw-table](miso/combined-miso.csv.gz)
 
 [summary-table](RI_summary.csv)
+
+## Skipped exon
+
+### PRPF8
+```{r prpf8-se-table}
+sesum = subset(misosum, eventtype == "SE")
+table(sesum$prpf8_diff)
+wilcox.test(sesum$control, sesum$prpf8, alternative="less")
+```
+
+### PRPF38
+
+```{r prpf38-se-table}
+table(sesum$prpf38_diff)
+wilcox.test(sesum$control, sesum$prpf38, alternative="less")
+```
+
+### Table download
+```{r write-se-table}
+sesum = sesum %>% left_join(events2gene, by="event_name")
+write.table(sesum, file="SE_summary.csv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep=",")
+```
+
+[summary-table](SE_summary.csv)
+
+# Raw data
+
+[raw-table](miso/combined-miso.tsv.gz)
