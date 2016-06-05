@@ -38,7 +38,7 @@ event in all genotypes. Then I plotted the mean PSI value for the various
 genotypes against each other, similar to figure 3C in the paper that was
 linked.
 
-# Retained introns
+# PSI plots
 
 ```{r summarise}
 misosum = miso %>%
@@ -53,7 +53,7 @@ misosum = misosum %>%
                        ifelse(control - prpf38 < -0.10, "higher", "same")))
 ```
 
-## PSI plots
+## PRPF8
 ```{r prpf8-ri}
 ggplot(misosum, aes(control, prpf8, color=prpf8_diff)) +
   facet_wrap(~eventtype) +
@@ -64,6 +64,7 @@ ggplot(misosum, aes(control, prpf8, color=prpf8_diff)) +
   scale_color_viridis(discrete=TRUE)
 ```
 
+## PRPF38
 ```{r prpf38-ri}
 ggplot(misosum, aes(control, prpf38, color=prpf38_diff)) +
   facet_wrap(~eventtype) +
