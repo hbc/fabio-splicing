@@ -59,9 +59,11 @@ ggplot(misosum, aes(control, prpf8, color=prpf8_diff)) +
   facet_wrap(~eventtype) +
   geom_point(alpha=0.3, size=1) +
   geom_abline() +
-  xlab("PSI, control") +
-  ylab("PSI, PRPF8") +
-  scale_color_viridis(discrete=TRUE)
+  xlab("\u03A8, control") +
+  ylab("\u03A8, PRPF8") +
+  scale_color_viridis(discrete=TRUE) +
+  panel_border() + labs(color="") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
 ```
 
 ## PRPF38
@@ -70,9 +72,11 @@ ggplot(misosum, aes(control, prpf38, color=prpf38_diff)) +
   facet_wrap(~eventtype) +
   geom_point(alpha=0.3, size=1) +
   geom_abline() +
-  xlab("PSI, control") +
-  ylab("PSI, PRPF38") +
-  theme_bw()
+  xlab("\u03A8, control") +
+  ylab("\u03A8, PRPF38") +
+  scale_color_viridis(discrete=TRUE) +
+  panel_border() + labs(color="") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
 ```
 
 # Wilcoxon tests
