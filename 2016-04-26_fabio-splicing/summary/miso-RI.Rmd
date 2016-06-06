@@ -25,7 +25,7 @@ library(tidyr)
 library(ggplot2)
 library(cowplot)
 library(viridis)
-misofn = "miso/new/combined-miso.tsv"
+misofn = "miso/combined-miso.tsv"
 miso = read_tsv(misofn) %>%
   tidyr::separate(samplename, c("genotype", "replicate"), sep="_")
 events2gene = read_tsv("miso/event-to-gene.tsv", col_names=FALSE)

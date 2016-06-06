@@ -249,10 +249,38 @@ div.tocify {
 &gt;<span class="st"> </span><span class="kw">library</span>(ggplot2)
 &gt;<span class="st"> </span><span class="kw">library</span>(cowplot)
 &gt;<span class="st"> </span><span class="kw">library</span>(viridis)
-&gt;<span class="st"> </span>misofn =<span class="st"> &quot;miso/new/combined-miso.tsv&quot;</span>
+&gt;<span class="st"> </span>misofn =<span class="st"> &quot;miso/combined-miso.tsv&quot;</span>
 &gt;<span class="st"> </span>miso =<span class="st"> </span><span class="kw">read_tsv</span>(misofn) %&gt;%<span class="st"> </span>tidyr::<span class="kw">separate</span>(samplename, <span class="kw">c</span>(<span class="st">&quot;genotype&quot;</span>, <span class="st">&quot;replicate&quot;</span>), 
-+<span class="st">     </span><span class="dt">sep =</span> <span class="st">&quot;_&quot;</span>)
-&gt;<span class="st"> </span>events2gene =<span class="st"> </span><span class="kw">read_tsv</span>(<span class="st">&quot;miso/event-to-gene.tsv&quot;</span>, <span class="dt">col_names =</span> <span class="ot">FALSE</span>)
++<span class="st">     </span><span class="dt">sep =</span> <span class="st">&quot;_&quot;</span>)</code></pre>
+<pre><code>
+|=                                                                              |   2%    5 MB
+|===                                                                            |   4%   11 MB
+|=====                                                                          |   6%   16 MB
+|========                                                                       |  10%   24 MB
+|===========                                                                    |  14%   34 MB
+|==============                                                                 |  18%   44 MB
+|=================                                                              |  22%   54 MB
+|=====================                                                          |  26%   64 MB
+|========================                                                       |  30%   74 MB
+|===========================                                                    |  34%   83 MB
+|==============================                                                 |  38%   93 MB
+|=================================                                              |  42%  103 MB
+|=====================================                                          |  46%  113 MB
+|========================================                                       |  50%  122 MB
+|===========================================                                    |  54%  132 MB
+|==============================================                                 |  58%  142 MB
+|=================================================                              |  62%  152 MB
+|=====================================================                          |  66%  162 MB
+|========================================================                       |  70%  171 MB
+|===========================================================                    |  74%  181 MB
+|==============================================================                 |  78%  191 MB
+|=================================================================              |  82%  201 MB
+|=====================================================================          |  86%  210 MB
+|========================================================================       |  90%  220 MB
+|===========================================================================    |  94%  230 MB
+|============================================================================== |  98%  240 MB
+|================================================================================| 100%  243 MB</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">&gt;<span class="st"> </span>events2gene =<span class="st"> </span><span class="kw">read_tsv</span>(<span class="st">&quot;miso/event-to-gene.tsv&quot;</span>, <span class="dt">col_names =</span> <span class="ot">FALSE</span>)
 &gt;<span class="st"> </span><span class="kw">colnames</span>(events2gene) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;event_name&quot;</span>, <span class="st">&quot;symbol&quot;</span>)</code></pre>
 <p>I grouped the samples by genotype and calculated the mean PSI value for each event. I kept only events where a PSI value was calculated for an event in all genotypes. Then I plotted the mean PSI value for the various genotypes against each other, similar to figure 3C in the paper that was linked.</p>
 <div id="psi-plots" class="section level1">
