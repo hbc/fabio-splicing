@@ -3,12 +3,14 @@ output:
   html_document:
     toc: true
     toc_float: true
-    code_folding: hide
+    code_folding: show
     highlight: zenburn
     theme: flatly
 ---
 
 ```{r setup, echo=FALSE}
+
+
 knitr::opts_chunk$set(tidy=TRUE, highlight=TRUE, dev="png",
                       cache=TRUE, cache.lazy=FALSE, highlight=TRUE, autodep=TRUE,
                       warning=FALSE, error=FALSE,

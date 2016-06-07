@@ -84,7 +84,7 @@ ggplot(misosum, aes(control, prpf38, color=prpf38_diff)) +
 Here is a summary of the counts of events for being higher, lower or the same
 in PRPF8 compared to control, where higher and lower are different by 10% PSI.
 
-## RI
+## Retained intron (RI)
 
 ### PRPF8
 
@@ -107,10 +107,9 @@ risum = risum %>% left_join(events2gene, by="event_name")
 write.table(risum, file="RI_summary.csv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep=",")
 ```
 
-
 [summary-table](RI_summary.csv)
 
-## Skipped exon
+## Skipped exon (SE)
 
 ### PRPF8
 ```{r prpf8-se-table}
@@ -133,6 +132,66 @@ write.table(sesum, file="SE_summary.csv", row.names=FALSE, col.names=TRUE, quote
 ```
 
 [summary-table](SE_summary.csv)
+
+## Alternative 3' start site (A3SS)
+
+```{r prpf8-a3ss-table}
+a3sssum = subset(misosum, eventtype == "A3SS")
+table(a3sssum$prpf8_diff)
+wilcox.test(a3sssum$control, a3sssum$prpf8, alternative="less")
+```
+
+```{r prpf38-a3ss-table}
+table(a3sssum$prpf38_diff)
+wilcox.test(a3sssum$control, a3sssum$prpf38, alternative="less")
+```
+
+```{r write-a3ss-table}
+a3sssum = a3sssum %>% left_join(events2gene, by="event_name")
+write.table(a3sssum, file="A3SS_summary.csv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep=",")
+```
+
+[summary-table](A3SS_summary.csv)
+
+## Alternative 5' start site (A5SS)
+
+```{r prpf8-a5ss-table}
+a5sssum = subset(misosum, eventtype == "A5SS")
+table(a5sssum$prpf8_diff)
+wilcox.test(a5sssum$control, a5sssum$prpf8, alternative="less")
+```
+
+```{r prpf38-a5ss-table}
+table(a5sssum$prpf38_diff)
+wilcox.test(a5sssum$control, a5sssum$prpf38, alternative="less")
+```
+
+```{r write-a5ss-table}
+a5sssum = a5sssum %>% left_join(events2gene, by="event_name")
+write.table(a5sssum, file="A5SS_summary.csv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep=",")
+```
+
+[summary-table](A5SS_summary.csv)
+
+## Mutually exclusive exons (MXE)
+
+```{r prpf8-mxe-table}
+mxesum = subset(misosum, eventtype == "MXE")
+table(mxesum$prpf8_diff)
+wilcox.test(mxesum$control, mxesum$prpf8, alternative="less")
+```
+
+```{r prpf38-mxe-table}
+table(mxesum$prpf38_diff)
+wilcox.test(mxesum$control, mxesum$prpf38, alternative="less")
+```
+
+```{r write-mxe-table}
+mxesum = mxesum %>% left_join(events2gene, by="event_name")
+write.table(mxesum, file="MXE_summary.csv", row.names=FALSE, col.names=TRUE, quote=FALSE, sep=",")
+```
+
+[summary-table](MXE_summary.csv)
 
 # Raw data
 
