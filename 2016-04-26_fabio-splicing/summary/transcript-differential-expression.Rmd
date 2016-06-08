@@ -255,3 +255,28 @@ write.table(tpm, file="tpm.csv", quote=FALSE, col.names=TRUE, row.names=FALSE,
 ```
 
 [TPM matrix](tpm.csv)
+
+# Transcript MA plots
+
+```{r sleuth-ma-plot}
+library(cowplot)
+sleuth_MA = function(results) {
+  results$DE = results$qval < 0.05
+  ggplot(results, aes(mean_obs, b, color=DE)) +
+    geom_point(size=0.5) +
+    guides(color=FALSE) +
+    scale_color_manual(values=c("black", "red")) +
+    xlab("mean expression") +
+    ylab(expression("\u0392"))
+}
+```
+
+## PRPF8
+```{r prpf8-ma-plot}
+sleuth_MA(prpf8_tab)
+```
+
+## PRPF38
+```{r prpf38-plot}
+sleuth_MA(prpf38_tab)
+```
