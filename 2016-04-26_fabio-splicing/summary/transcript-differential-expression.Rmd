@@ -250,6 +250,13 @@ write.table(prpf38_tab, file="control-vs-prpf38-sleuth.csv", quote=FALSE,
 tpm = so$obs_norm %>%
   dplyr::select(target_id, sample, tpm) %>%
   tidyr::spread(sample, tpm)
+library(biomaRt)
+library(dplyr)
+human = useMart(biomart = "ENSEMBL_MART_ENSEMBL",
+                dataset="hsapiens_gene_ensembl",
+                host = "jul2015.archive.ensembl.org")
+symbols = getBM(attributes=c("ensembl_transcript_id", "hgnc_symbol"), mart=human)
+tpm = tpm %>% left_join(symbols, by=c("target_id"="ensembl_transcript_id"))
 write.table(tpm, file="tpm.csv", quote=FALSE, col.names=TRUE, row.names=FALSE,
             sep=",")
 ```

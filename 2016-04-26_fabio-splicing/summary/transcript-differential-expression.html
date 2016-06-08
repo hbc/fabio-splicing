@@ -623,6 +623,12 @@ div.tocify {
 <h1>Write TPM matrix</h1>
 <pre class="sourceCode r"><code class="sourceCode r">&gt;<span class="st"> </span>tpm =<span class="st"> </span>so$obs_norm %&gt;%<span class="st"> </span>dplyr::<span class="kw">select</span>(target_id, sample, tpm) %&gt;%<span class="st"> </span>tidyr::<span class="kw">spread</span>(sample, 
 +<span class="st">     </span>tpm)
+&gt;<span class="st"> </span><span class="kw">library</span>(biomaRt)
+&gt;<span class="st"> </span><span class="kw">library</span>(dplyr)
+&gt;<span class="st"> </span>human =<span class="st"> </span><span class="kw">useMart</span>(<span class="dt">biomart =</span> <span class="st">&quot;ENSEMBL_MART_ENSEMBL&quot;</span>, <span class="dt">dataset =</span> <span class="st">&quot;hsapiens_gene_ensembl&quot;</span>, 
++<span class="st">     </span><span class="dt">host =</span> <span class="st">&quot;jul2015.archive.ensembl.org&quot;</span>)
+&gt;<span class="st"> </span>symbols =<span class="st"> </span><span class="kw">getBM</span>(<span class="dt">attributes =</span> <span class="kw">c</span>(<span class="st">&quot;ensembl_transcript_id&quot;</span>, <span class="st">&quot;hgnc_symbol&quot;</span>), <span class="dt">mart =</span> human)
+&gt;<span class="st"> </span>tpm =<span class="st"> </span>tpm %&gt;%<span class="st"> </span><span class="kw">left_join</span>(symbols, <span class="dt">by =</span> <span class="kw">c</span>(<span class="dt">target_id =</span> <span class="st">&quot;ensembl_transcript_id&quot;</span>))
 &gt;<span class="st"> </span><span class="kw">write.table</span>(tpm, <span class="dt">file =</span> <span class="st">&quot;tpm.csv&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>, <span class="dt">col.names =</span> <span class="ot">TRUE</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, 
 +<span class="st">     </span><span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>)</code></pre>
 <p><a href="tpm.csv">TPM matrix</a></p>
