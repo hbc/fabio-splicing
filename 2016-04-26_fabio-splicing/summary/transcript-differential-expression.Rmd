@@ -242,3 +242,16 @@ write.table(prpf38_tab, file="control-vs-prpf38-sleuth.csv", quote=FALSE,
 [control-vs-prpf8](control-vs-prpf8-sleuth.csv)
 
 [control-vs-prpf38](control-vs-prpf38-sleuth.csv)
+
+
+# Write TPM matrix
+
+```{r tpm-matrix}
+tpm = so$obs_norm %>%
+  dplyr::select(target_id, sample, tpm) %>%
+  tidyr::spread(sample, tpm)
+write.table(tpm, file="tpm.csv", quote=FALSE, col.names=TRUE, row.names=FALSE,
+            sep=",")
+```
+
+[TPM matrix](tpm.csv)
