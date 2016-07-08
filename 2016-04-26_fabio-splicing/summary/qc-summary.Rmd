@@ -417,6 +417,21 @@ join_biomart = function(res, symbols) {
 }
 ```
 
+```{r new-MAplot}
+library(cowplot)
+ourMAplot = function(results) {
+  results$DE = results$padj < 0.05
+  ggplot(results, aes(baseMean, log2FoldChange, color=DE)) +
+    geom_point(size=0.5) +
+    guides(color=FALSE) +
+    scale_color_manual(values=c("black", "red")) +
+    xlab("mean expression") +
+    ylab("log2 fold change") +
+    scale_x_log10() +
+    ylim(c(-4, 4))
+}
+```
+
 ## Differential expression {.tabset}
 For these comparisons, positive log2 fold changes are higher in `PRPF8` and
 `PRPF38` knockouts than the `control` samples. There are a lot of genes
@@ -433,6 +448,10 @@ prpf8 = join_biomart(prpf8, symbols)
 write.table(prpf8, file="prpf8-vs-control.csv", col.names=TRUE, row.names=FALSE,
             quote=FALSE, sep=",")
 ```
+
+```{r newMA-prpf8}
+ourMAplot(prpf8)
+```
 ihere are `r nrow(subset(prpf8, padj < 0.05))` genes differentially expressed
 between the `PRPF8` and the `control` samples.
 
@@ -445,6 +464,10 @@ volcano_density_plot(prpf38[, c(2,6)], title="PRPF38 vs control", lfc.cutoff=2)
 prpf38 = join_biomart(prpf38, symbols)
 write.table(prpf38, file="prpf38-vs-control.csv", col.names=TRUE, row.names=FALSE,
             quote=FALSE, sep=",")
+```
+
+```{r newMA-prpf38}
+ourMAplot(prpf38)
 ```
 
 There are `r nrow(subset(prpf38, padj < 0.05))` genes differentially expressed
