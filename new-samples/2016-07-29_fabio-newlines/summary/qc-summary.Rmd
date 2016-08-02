@@ -101,7 +101,8 @@ mart <- biomaRt::useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
 t2g <- biomaRt::getBM(attributes = c("ensembl_transcript_id", "ensembl_gene_id",
     "external_gene_name"), mart = mart)
 t2g <- dplyr::rename(t2g, target_id = ensembl_transcript_id,
-  ens_gene = ensembl_gene_id, ext_gene = external_gene_name)
+                     ens_gene = ensembl_gene_id, ext_gene = external_gene_name)
+symbols = unique(t2g[, c("ens_gene", "ext_gene")])
 ```
 
 ```{r sanitize-datatable}
@@ -468,14 +469,14 @@ plotMA_full = function(res) {
 }
 volcano = function(res) {
   stats = as.data.frame(res[,c(2,6)])
-  p = volcano_density_plot(stats, title=names(all_results)[i], lfc.cutoff=1.5)
+  p = volcano_density_plot(stats, lfc.cutoff=1.5)
   print(p)
 }
 write_deseq = function(res, fname) {
   out_df = as.data.frame(res)
   out_df$id = rownames(out_df)
   out_df = out_df[, c("id", colnames(out_df)[colnames(out_df) != "id"])]
-  out_df = out_df %>% left_join(symbol, by=c("id"="ens_gene"))
+  out_df = out_df %>% left_join(symbols, by=c("id"="ens_gene"))
   write.table(out_df, file=fname, quote=FALSE, sep=",",
               row.names=FALSE, col.names=TRUE)
 }
@@ -492,14 +493,14 @@ write_deseq(bort, "control-vs-bort-deseq2.csv")
 ```{r e7107-vs-control}
 plotMA(e7107)
 volcano(e7107)
-write_deseq(bort, "control-vs-e7107-deseq2.csv")
+write_deseq(e7107, "control-vs-e7107-deseq2.csv")
 ```
 
 ## BE vs control
 ```{r be-vs-control}
 plotMA(be)
 volcano(be)
-write_deseq(bort, "control-vs-be-deseq2.csv")
+write_deseq(be, "control-vs-be-deseq2.csv")
 ```
 
 ## sleuth
@@ -526,6 +527,11 @@ library(biomaRt)
 so = sleuth_prep(sfdata, design, target_mapping=t2g) %>% sleuth_fit()
 models(so)
 save(so, file="sleuth_models.RData")
+rm(so)
+```
+
+```{r load-sleuth, cache.lazy=FALSE}
+load("sleuth_models.RData")
 so = sleuth_wt(so, 'treatmentBE')
 so = sleuth_wt(so, 'treatmentBort')
 so = sleuth_wt(so, 'treatmentE7107')
@@ -729,7 +735,7 @@ library(dplyr)
 human = useMart(biomart = "ENSEMBL_MART_ENSEMBL",
                 dataset="hsapiens_gene_ensembl",
                 host = "jul2015.archive.ensembl.org")
-symbols = getBM(attributes=c("ensembl_transcript_id", "hgnc_symbol"), mart=human)
+symbols = getBM(attributes=c("ensembl_transcript_id", "external_gene_name"), mart=human)
 tpm = tpm %>% left_join(symbols, by=c("target_id"="ensembl_transcript_id"))
 write.table(tpm, file="tpm.csv", quote=FALSE, col.names=TRUE, row.names=FALSE,
             sep=",")
