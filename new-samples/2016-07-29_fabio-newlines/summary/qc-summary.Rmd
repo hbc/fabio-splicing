@@ -611,6 +611,7 @@ summarize_cp = function(res, comparison) {
      summaries = rbind(summaries, ontsum)
   }
   summaries$comparison = comparison
+  summaries = summaries %>% arrange(qvalue)
   return(summaries)}
 
 enrich_cp = function(res, comparison) {
