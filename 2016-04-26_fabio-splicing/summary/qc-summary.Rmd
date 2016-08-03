@@ -407,7 +407,7 @@ library(dplyr)
 human = useMart(biomart = "ENSEMBL_MART_ENSEMBL",
                 dataset="hsapiens_gene_ensembl",
                 host = "jul2015.archive.ensembl.org")
-symbols = getBM(attributes=c("ensembl_gene_id", "hgnc_symbol"), mart=human)
+symbols = getBM(attributes=c("ensembl_gene_id", "external_gene_name"), mart=human)
 join_biomart = function(res, symbols) {
   res = data.frame(res)
   res$id = rownames(res)
