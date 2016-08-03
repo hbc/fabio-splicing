@@ -476,7 +476,8 @@ write_deseq = function(res, fname) {
   out_df = as.data.frame(res)
   out_df$id = rownames(out_df)
   out_df = out_df[, c("id", colnames(out_df)[colnames(out_df) != "id"])]
-  out_df = out_df %>% left_join(symbols, by=c("id"="ens_gene"))
+  out_df = out_df %>% left_join(symbols, by=c("id"="ens_gene")) %>%
+    arrange(padj)
   write.table(out_df, file=fname, quote=FALSE, sep=",",
               row.names=FALSE, col.names=TRUE)
 }
