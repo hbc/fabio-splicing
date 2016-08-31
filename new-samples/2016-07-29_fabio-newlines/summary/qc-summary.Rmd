@@ -485,21 +485,21 @@ write_deseq = function(res, fname) {
 
 ## Bort vs control
 ```{r bort-vs-control}
-plotMA(bort)
+plotMA_full(bort)
 volcano(bort)
 write_deseq(bort, "control-vs-bort-deseq2.csv")
 ```
 
 ## E7107 vs control
 ```{r e7107-vs-control}
-plotMA(e7107)
+plotMA_full(e7107)
 volcano(e7107)
 write_deseq(e7107, "control-vs-e7107-deseq2.csv")
 ```
 
 ## BE vs control
 ```{r be-vs-control}
-plotMA(be)
+plotMA_full(be)
 volcano(be)
 write_deseq(be, "control-vs-be-deseq2.csv")
 ```
@@ -775,3 +775,87 @@ ont = ontological term tested (MF=molecular function, CC=cellular compartment,
 
 # TPM matrix
 [TPM matrix](tpm.csv)
+
+# Treatment interactions
+When we did the pairwise comparisons, it made it hard to answer questions
+about what the effect of treating with both Bortezomib and E7107 is, without
+resorting to a crappy solution of doing Venn diagrams of the DE genes.
+
+To get at that question, we'll look at the data slightly differently,
+instead of comparing the treated back to the control samples, we instead are
+going to look for effects that are specific to the treatment with Bortezomib or
+E7107 alone and also look for genes that are specifically turned on when both
+are treated. To do that we will re-analyze the data, but fit a model with an
+interaction term, and then test for the effects of treatment with Bort alone,
+treatment with E7107 alone and treamtent with both Bort and E7107.
+
+```{r interactions}
+summarydata$bort = ifelse(summarydata$treatment == "Bort", "yes",
+                          ifelse(summarydata$treatment == "BE", "yes", "no"))
+summarydata$E7107 = ifelse(summarydata$treatment == "E7107", "yes",
+                    ifelse(summarydata$treatment == "BE", "yes", "no"))
+design = ~bort+E7107+bort:E7107
+if(exists("txi.salmon")) {
+   txi.salmon = subset_tximport(txi.salmon, rownames(counts), colnames(counts))
+   dds = DESeqDataSetFromTximport(txi.salmon, colData=summarydata, design=design)
+} else {
+  dds = DESeqDataSetFromMatrix(countData=counts,
+      colData=summarydata, design = design  )
+}
+geoMeans = apply(counts, 1, function(row) if (all(row == 0)) 0 else
+                 exp(mean(log(row[row != 0]))))
+dds = estimateSizeFactors(dds, geoMeans=geoMeans)
+dds = DESeq(dds)
+symbols = unique(t2g[, c("ens_gene", "ext_gene", "gene_biotype")])
+```
+## Bort effect
+```{r bort-effect}
+bort = results(dds, name="bort_yes_vs_no")
+plotMA_full(bort)
+volcano(bort)
+write_deseq(bort, "bort-effect.csv")
+```
+
+## E7107 effect
+```{r e7107-effect}
+e7107 = results(dds, name="E7107_yes_vs_no")
+plotMA_full(e7107)
+volcano(e7107)
+write_deseq(e7107, "E7107-effect.csv")
+```
+
+## Combined treatment effect
+```{r bort-e7107-effect}
+combined = results(dds, name="bortyes.E7107yes")
+plotMA_full(combined)
+volcano(combined)
+write_deseq(combined, "combined-effect.csv")
+```
+
+# Technical replicates?
+These samples are all very very similar to each other within a sample class,
+you can see they are almost perfectly correlated using Pearson correlation:
+
+```{r correlation-plot}
+library(corrplot)
+m = cor(counts)
+corrplot(m, method="number")
+```
+
+## Effect tables
+[Bort effect](bort-effect.csv)
+
+[E7107 effect](E7107-effect.csv)
+
+[Combined effect](combined-effect.csv)
+
+I talked with Praveen and it sounded like these were closer to being technical
+variants than biological variants in terms of the experimental setup, and the
+extremely high degree of correlation supports that. If that is true, it might
+be worthwhile to just look at one sample of each and pretend like the
+experiment was run with no replicates. We're in kind of a tough spot because
+treating technical replicates as biological replicates is wrong, and leads to
+what we are seeing where there are very high confidence changes when there
+is only a small difference. If we do it the other way with no replicates,
+then we lose a lot of power. However if these are actually technical replicates
+than the 'power' we have is illusory since it isn't based on anything real.
