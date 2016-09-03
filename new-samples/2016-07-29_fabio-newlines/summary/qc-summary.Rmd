@@ -810,26 +810,26 @@ symbols = unique(t2g[, c("ens_gene", "ext_gene", "gene_biotype")])
 ```
 ## Bort effect
 ```{r bort-effect}
-bort = results(dds, name="bort_yes_vs_no")
-plotMA_full(bort)
-volcano(bort)
-write_deseq(bort, "bort-effect.csv")
+borteff = results(dds, name="bort_yes_vs_no")
+plotMA_full(borteff)
+volcano(borteff)
+write_deseq(borteff, "bort-effect.csv")
 ```
 
 ## E7107 effect
 ```{r e7107-effect}
-e7107 = results(dds, name="E7107_yes_vs_no")
-plotMA_full(e7107)
-volcano(e7107)
-write_deseq(e7107, "E7107-effect.csv")
+e7107eff = results(dds, name="E7107_yes_vs_no")
+plotMA_full(e7107eff)
+volcano(e7107eff)
+write_deseq(e7107eff, "E7107-effect.csv")
 ```
 
 ## Combined treatment effect
 ```{r bort-e7107-effect}
-combined = results(dds, name="bortyes.E7107yes")
-plotMA_full(combined)
-volcano(combined)
-write_deseq(combined, "combined-effect.csv")
+combinedeff = results(dds, name="bortyes.E7107yes")
+plotMA_full(combinedeff)
+volcano(combinedeff)
+write_deseq(combinedeff, "combined-effect.csv")
 ```
 
 # Technical replicates?
@@ -859,3 +859,109 @@ what we are seeing where there are very high confidence changes when there
 is only a small difference. If we do it the other way with no replicates,
 then we lose a lot of power. However if these are actually technical replicates
 than the 'power' we have is illusory since it isn't based on anything real.
+
+# Effect reversal
+
+Here we select genes which are significantly different from the control in the
+combinination treatment and look how they correlate with the individual treatments:
+
+## All genes affected by the combination of two drugs
+```{r reversals}
+sig = rownames(subset(be, padj < 0.05 & !is.na(padj) & abs(log2FoldChange) > 1 & baseMean > 50))
+bortrev = (bort[sig,]$log2FoldChange * be[sig,]$log2FoldChange) < 0
+names(bortrev) = sig
+e7107rev = (e7107[sig,]$log2FoldChange * be[sig,]$log2FoldChange) < 0
+names(e7107rev) = sig
+table(bortrev & !e7107rev)
+table(e7107rev & !bortrev)
+table(bortrev & e7107rev)
+both = sig[bortrev & e7107rev]
+write_deseq(combinedeff[both,], "combined-treatment-reversal.csv")
+foldchanges = data.frame(bort=bort[sig,]$log2FoldChange,
+                         e7107=e7107[sig,]$log2FoldChange,
+                         both=be[sig,]$log2FoldChange)
+ggplot(foldchanges, aes(bort, both)) + geom_point() +
+  ylab("logFC treatment with bortezomib and E7107") +
+  xlab("logFC treatment with bortezomib")
+ggplot(foldchanges, aes(e7107, both)) + geom_point() +
+  ylab("logFC treatment with bortezomib and E7107") +
+  xlab("logFC treatment with E7107")
+```
+
+There are `r sum(bortrev & !e7107rev)` genes affected by the combination treatment
+that have a combined affect in the opposite direction of the bortezomib alone effect.
+There are `r sum(e7107rev & !bortrev)` genes affected by the combination treatment
+that have a combined effect in the opposite direction of the E7107 alone effect.
+And there are `r sum(bortrev & e7107rev)` genes affected by the combination treatment
+that have a combined effect in the opposite direction than both the E7107
+and bortezomib alone treatments.
+
+## All genes affected in a non-additive way by the two drugs
+Below we select the starting set of genes differently, by looking at the
+genes with a significant interaction term. These are genes that appear to
+have a non-additive effect of combining the two treatments:
+
+```{r reversal-selected-interaction}
+sig = rownames(subset(combinedeff, padj < 0.05 & !is.na(padj) & abs(log2FoldChange) > 1 & baseMean > 50))
+bortrev = (bort[sig,]$log2FoldChange * be[sig,]$log2FoldChange) < 0
+names(bortrev) = sig
+e7107rev = (e7107[sig,]$log2FoldChange * be[sig,]$log2FoldChange) < 0
+names(e7107rev) = sig
+table(bortrev & !e7107rev)
+table(e7107rev & !bortrev)
+table(bortrev & e7107rev)
+both = sig[bortrev & e7107rev]
+write_deseq(combinedeff[both,], "combined-treatment-reversal.csv")
+foldchanges = data.frame(bort=bort[sig,]$log2FoldChange,
+                         e7107=e7107[sig,]$log2FoldChange,
+                         both=be[sig,]$log2FoldChange)
+ggplot(foldchanges, aes(bort, both)) + geom_point() +
+  ylab("logFC treatment with bortezomib and E7107") +
+  xlab("logFC treatment with bortezomib")
+ggplot(foldchanges, aes(e7107, both)) + geom_point() +
+  ylab("logFC treatment with bortezomib and E7107") +
+  xlab("logFC treatment with E7107")
+```
+
+There are `r sum(bortrev & !e7107rev)` genes with a non-additive combination
+treatment effect that have a combined affect in the opposite direction of the
+bortezomib alone effect. There are `r sum(e7107rev & !bortrev)` genes with a
+non-additive combination treatment effect that have a combined effect in the
+opposite direction of the E7107 alone effect. And there are `r sum(bortrev &
+e7107rev)` genes with a non-additive treatment effect that have a combined
+effect in the opposite direction than both the E7107 and bortezomib alone
+treatments.
+
+## Amplified and dampened genes
+Here we looked at all genes that were affected in a non-additive way
+by the combination of the two drugs. Then we looked at genes that were
+moving in the same direction in each of the single treatments and the
+combination treatment, but were more strongly affected in the combination treatment
+than expected by adding the two treatments together (amplified). Similarly
+we looked for genes that were less strongly affected than expected by adding
+the two treatments together (dampened).
+
+```{r amplified-genes}
+amplified = (e7107[sig,]$log2FoldChange > 0 &
+             be[sig,]$log2FoldChange > 0 &
+             bort[sig,]$log2FoldChange > 0 &
+             combinedeff[sig,]$log2FoldChange > 0) |
+  (e7107[sig,]$log2FoldChange < 0 &
+   be[sig,]$log2FoldChange < 0 &
+   bort[sig,]$log2FoldChange < 0 &
+   combinedeff[sig,]$log2FoldChange < 0)
+dampened = (e7107[sig,]$log2FoldChange > 0 &
+             be[sig,]$log2FoldChange > 0 &
+             bort[sig,]$log2FoldChange > 0 &
+             combinedeff[sig,]$log2FoldChange < 0) |
+  (e7107[sig,]$log2FoldChange < 0 &
+   be[sig,]$log2FoldChange < 0 &
+   bort[sig,]$log2FoldChange < 0 &
+   combinedeff[sig,]$log2FoldChange > 0)
+fcplot = data.frame(additive=e7107[sig,]$log2FoldChange + bort[sig,]$log2FoldChange,
+                    both=be[sig,]$log2FoldChange, amplified=ifelse(amplified, "amplified", ifelse(dampened, "dampened", "neither")))
+ggplot(fcplot, aes(additive, both, color=amplified)) + geom_point() +
+  xlab("theoretical additive effect of both drugs") +
+  ylab("actual effect when both drugs are applied") +
+  labs(color="")
+```
