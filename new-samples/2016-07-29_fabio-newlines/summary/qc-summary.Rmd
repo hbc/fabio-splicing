@@ -958,10 +958,33 @@ dampened = (e7107[sig,]$log2FoldChange > 0 &
    be[sig,]$log2FoldChange < 0 &
    bort[sig,]$log2FoldChange < 0 &
    combinedeff[sig,]$log2FoldChange > 0)
-fcplot = data.frame(additive=e7107[sig,]$log2FoldChange + bort[sig,]$log2FoldChange,
-                    both=be[sig,]$log2FoldChange, amplified=ifelse(amplified, "amplified", ifelse(dampened, "dampened", "neither")))
-ggplot(fcplot, aes(additive, both, color=amplified)) + geom_point() +
+reversed = bortrev & e7107rev
+fcplot = data.frame(e7107=e7107[sig,]$log2FoldChange,
+                    bort=bort[sig,]$log2FoldChange,
+                    theoretical=e7107[sig,]$log2FoldChange + bort[sig,]$log2FoldChange,
+                    actual=be[sig,]$log2FoldChange,
+                    bortrev=bortrev,
+                    e7107rev=e7107rev,
+                    amplified=amplified,
+                    dampened=dampened,
+                    reversed=reversed,
+                    effect=ifelse(amplified, "amplified",
+                              ifelse(dampened, "dampened",
+                              ifelse(reversed, "reversed",
+                              ifelse(bortrev, "bortrev",
+                              ifelse(e7107rev, "e7107rev",
+                                     "none"))))))
+fcplot$interactionFDR=combinedeff[sig,]$padj
+fcplot$baseMean=combinedeff[sig,]$baseMean
+rownames(fcplot) = sig
+ggplot(fcplot, aes(theoretical, actual, color=effect)) + geom_point() +
   xlab("theoretical additive effect of both drugs") +
   ylab("actual effect when both drugs are applied") +
   labs(color="")
+fcplot = fcplot %>% tibble::rownames_to_column() %>%
+  left_join(symbols, by=c("rowname"="ens_gene")) %>%
+  arrange(interactionFDR)
+readr::write_csv(fcplot, "theoretical-vs-actual.csv")
 ```
+
+[Theoretical vs actual](theoretical-vs-actual.csv)
