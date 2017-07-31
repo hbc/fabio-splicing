@@ -988,3 +988,48 @@ readr::write_csv(fcplot, "theoretical-vs-actual.csv")
 ```
 
 [Theoretical vs actual](theoretical-vs-actual.csv)
+
+# GEO output
+For the GEO submission, they want to include only the control and the E7107
+samples. We'll subset down the TPM samples and the counts, and then output
+only the transcript/gene counts for the control and E7107 samples.
+
+```
+gene-TPM-E7017.csv
+gene-counts-E7107.csv
+transcript-TPM-E7107.csv
+transcript-counts-E7107.csv
+control-vs-E7107.csv
+control-vs-E7107-sleuth.csv
+```
+
+```{r geo-output-gene-tpm}
+keep = startsWith(summarydata$Name, "Ctrl") | startsWith(summarydata$Name, "E7107")
+keep = summarydata$Name[keep]
+sailfish_gene_tpm = readr::read_tsv("../combined.gene.sf.tpm")
+sailfish_gene_tpm = sailfish_gene_tpm[, c("gene_id", keep)]
+readr::write_csv(sailfish_gene_tpm, "geo/gene-TPM-E7107.csv")
+```
+
+```{r geo-output-transcript-tpm}
+sailfish_transcript_tpm = readr::read_tsv("../combined.isoform.sf.tpm")
+sailfish_transcript_tpm = sailfish_transcript_tpm[, c("id", keep)]
+readr::write_csv(sailfish_transcript_tpm, "geo/transcript-TPM-E7107.csv")
+```
+
+```{r geo-output-gene-counts}
+genecounts = counts(dds, normalized=FALSE)[, keep] %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("ensembl_gene_id")
+readr::write_csv(genecounts, "geo/gene-counts-E7107.csv")
+```
+
+```{r geo-output-transcript-counts}
+txi.salmon.tx = tximport(sf_files, type="salmon",
+                         countsFromAbundance="lengthScaledTPM",
+                         txOut=TRUE)
+txcounts = round(txi.salmon.tx$counts)[, keep] %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("ensembl_transcript_id")
+readr::write_csv(genecounts, "geo/transcript-counts-E7107.csv")
+```
